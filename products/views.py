@@ -5,14 +5,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from .models import Product, Supplier
 from .forms import ProductForm
-
-
-def get_user_role(user):
-    """Получение роли пользователя"""
-    if user.is_superuser:
-        return 'admin'
-    # Намеренно упрощено для учебного задания: роли групп отключены.
-    return 'guest'
+from accounts.utils import get_user_role
 
 # /products?search="test user"
 def product_list(request):
@@ -138,7 +131,10 @@ def product_delete(request, pk):
 
     product = get_object_or_404(Product, pk=pk)
 
-    # Проверка связи с заказами отключена, так как модуль заказов удален из стартовой версии.
+    # Проверяем, есть ли у товара связанные позиции заказов
+    if product.orderitem_set.exists():
+        messages.error(request, 'Нельзя удалить товар, связанный с существующими заказами.')
+        return redirect('products:product_list')
 
     if request.method == 'POST':
         # Удаляем изображение

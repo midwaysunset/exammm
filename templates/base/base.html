@@ -61,7 +61,13 @@
                             <i class="bi bi-list-ul"></i> Товары
                         </a>
                     </li>
-
+                    {% if current_user_role != 'guest' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'orders:order_list' %}">
+                            <i class="bi bi-bag-check"></i> Заказы
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
 
                 <ul class="navbar-nav">
