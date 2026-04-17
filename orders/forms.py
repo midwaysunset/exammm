@@ -4,7 +4,6 @@ from .models import Order, OrderItem, OrderStatus, PickupPoint
 
 
 class OrderCreateForm(forms.ModelForm):
-    """Форма создания заказа для клиента"""
     class Meta:
         model = Order
         fields = ['pickup_point']
@@ -17,7 +16,6 @@ class OrderCreateForm(forms.ModelForm):
 
 
 class OrderStatusForm(forms.ModelForm):
-    """Форма обновления заказа для менеджера — только статус"""
     class Meta:
         model = Order
         fields = ['status']
@@ -30,7 +28,6 @@ class OrderStatusForm(forms.ModelForm):
 
 
 class OrderAdminForm(forms.ModelForm):
-    """Форма полного редактирования заказа для администратора"""
     class Meta:
         model = Order
         fields = ['status', 'pickup_point', 'delivery_date']
@@ -50,7 +47,6 @@ class OrderAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Форматируем начальное значение для datetime-local
         if self.instance and self.instance.delivery_date:
             self.fields['delivery_date'].initial = (
                 self.instance.delivery_date.strftime('%Y-%m-%dT%H:%M')
@@ -58,7 +54,6 @@ class OrderAdminForm(forms.ModelForm):
 
 
 class OrderItemForm(forms.ModelForm):
-    """Форма позиции заказа"""
     class Meta:
         model = OrderItem
         fields = ['product', 'quantity']
