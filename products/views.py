@@ -9,15 +9,11 @@ from accounts.utils import get_user_role
 
 # /products?search="test user"
 def product_list(request):
-    """Список электрозапчастей с учетом роли пользователя"""
     user_role = get_user_role(request.user) if request.user.is_authenticated else 'guest'
 
-    # Базовый queryset
     products = Product.objects.select_related('category', 'manufacturer', 'supplier', 'unit')
 
-    # Фильтры и поиск доступны только администратору
     if user_role == 'admin':
-        # Поиск
         search_query = request.GET.get('search', '')
         if search_query:
             products = products.filter(
@@ -29,12 +25,10 @@ def product_list(request):
                 Q(unit__name__icontains=search_query)
             )
 
-        # Фильтр по поставщику
         supplier_filter = request.GET.get('supplier', '')
         if supplier_filter:
             products = products.filter(supplier__id=supplier_filter)
 
-        # Сортировка
         sort_by = request.GET.get('sort', 'name')
         if sort_by == 'quantity_asc':
             products = products.order_by('quantity')
@@ -53,8 +47,7 @@ def product_list(request):
     if user_role != 'admin':
         products = products.order_by('name')
 
-    # Пагинация
-    paginator = Paginator(products, 10)  # 10 товаров на страницу
+    paginator = Paginator(products, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -72,7 +65,6 @@ def product_list(request):
 
 @login_required
 def product_create(request):
-    """Создание новой электрозапчасти (только для администраторов)"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет прав для выполнения этого действия.')
         return redirect('products:product_list')
@@ -95,7 +87,6 @@ def product_create(request):
 
 @login_required
 def product_update(request, pk):
-    """Редактирование электрозапчасти (только для администраторов)"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет прав для выполнения этого действия.')
         return redirect('products:product_list')
@@ -105,7 +96,6 @@ def product_update(request, pk):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            # Удаляем старое изображение, если оно заменено
             if 'image' in request.FILES and product.image:
                 product.image.delete()
             form.save()
@@ -124,20 +114,17 @@ def product_update(request, pk):
 
 @login_required
 def product_delete(request, pk):
-    """Удаление электрозапчасти (только для администраторов)"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет прав для выполнения этого действия.')
         return redirect('products:product_list')
 
     product = get_object_or_404(Product, pk=pk)
 
-    # Проверяем, есть ли у товара связанные позиции заказов
     if product.orderitem_set.exists():
         messages.error(request, 'Нельзя удалить товар, связанный с существующими заказами.')
         return redirect('products:product_list')
 
     if request.method == 'POST':
-        # Удаляем изображение
         if product.image:
             product.image.delete()
         product.delete()
