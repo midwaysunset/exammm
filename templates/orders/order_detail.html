@@ -1,0 +1,104 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Заказ {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-bag-check"></i> Заказ {{ order.order_number }}
+                </h5>
+                <span class="badge
+                    {% if order.status.name == 'Новый' %}bg-light text-dark
+                    {% elif order.status.name == 'В обработке' %}bg-warning text-dark
+                    {% elif order.status.name == 'Готов к выдаче' %}bg-info
+                    {% elif order.status.name == 'Выдан' %}bg-success
+                    {% elif order.status.name == 'Отменён' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    {{ order.status.name }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <strong>Дата заказа:</strong><br>
+                        {{ order.order_date|date:"d.m.Y H:i" }}
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Дата выдачи:</strong><br>
+                        {% if order.delivery_date %}
+                            {{ order.delivery_date|date:"d.m.Y H:i" }}
+                        {% else %}
+                            <span class="text-muted">Не указана</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    {% if user_role == 'manager' or user_role == 'admin' %}
+                    <div class="col-sm-6">
+                        <strong>Покупатель:</strong><br>
+                        {{ order.customer.get_full_name|default:order.customer.username }}
+                    </div>
+                    {% endif %}
+                    <div class="col-sm-6">
+                        <strong>Пункт выдачи:</strong><br>
+                        {{ order.pickup_point.address }}
+                    </div>
+                </div>
+
+                <hr>
+                <h6>Состав заказа</h6>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th class="text-end">Цена</th>
+                            <th class="text-end">Кол-во</th>
+                            <th class="text-end">Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td class="text-end">{{ item.price|floatformat:2 }} ₽</td>
+                            <td class="text-end">{{ item.quantity }}</td>
+                            <td class="text-end">{{ item.subtotal|floatformat:2 }} ₽</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="3" class="text-end">Итого:</td>
+                            <td class="text-end">{{ order.total|floatformat:2 }} ₽</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header"><h6 class="mb-0">Действия</h6></div>
+            <div class="card-body d-grid gap-2">
+                {% if user_role == 'manager' or user_role == 'admin' %}
+                <a href="{% url 'orders:order_update' order.pk %}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </a>
+                {% endif %}
+                {% if user_role == 'admin' %}
+                <a href="{% url 'orders:order_delete' order.pk %}" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Удалить заказ
+                </a>
+                {% endif %}
+                <a href="{% url 'orders:order_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> К списку заказов
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
