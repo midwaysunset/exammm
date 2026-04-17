@@ -5,7 +5,6 @@ from products.models import Product
 
 
 class OrderStatus(models.Model):
-    """Статус заказа"""
     name = models.CharField(max_length=50, unique=True, verbose_name="Название")
 
     class Meta:
@@ -18,7 +17,6 @@ class OrderStatus(models.Model):
 
 
 class PickupPoint(models.Model):
-    """Пункт выдачи заказа"""
     address = models.CharField(max_length=300, unique=True, verbose_name="Адрес")
 
     class Meta:
@@ -31,7 +29,6 @@ class PickupPoint(models.Model):
 
 
 class Order(models.Model):
-    """Заказ"""
     order_number = models.CharField(max_length=50, unique=True, blank=True, verbose_name="Номер заказа")
     order_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата заказа")
     delivery_date = models.DateTimeField(null=True, blank=True, verbose_name="Дата выдачи")
@@ -58,7 +55,6 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    """Позиция заказа"""
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name="Заказ")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Товар")
     quantity = models.PositiveIntegerField(verbose_name="Количество")
